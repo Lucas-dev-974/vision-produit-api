@@ -1,6 +1,7 @@
 import type { ColumnOptions, ColumnType } from 'typeorm';
-import type { PrimaryColumnOptions } from 'typeorm/decorator/options/PrimaryColumnOptions';
 import { env } from './env';
+
+type PrimaryColumnOptions = ColumnOptions & { nullable?: false };
 
 const isMysql = env.DB_TYPE === 'mysql';
 
