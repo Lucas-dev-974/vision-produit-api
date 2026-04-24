@@ -10,7 +10,7 @@ import {
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
 import { Message } from './message.entity';
-import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
+import { TIMESTAMPTZ_TYPE, uuidColumn, uuidPrimaryColumn } from '../config/db-types';
 
 export enum ReportCategory {
   FAKE_PROFILE = 'fake_profile',
@@ -29,7 +29,7 @@ export enum ReportStatus {
 
 @Entity('reports')
 export class Report {
-  @PrimaryColumn(uuidColumn())
+  @PrimaryColumn(uuidPrimaryColumn())
   id!: string;
 
   @Column(uuidColumn({ name: 'reporter_id' }))

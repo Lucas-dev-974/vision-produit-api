@@ -11,11 +11,11 @@ import { randomUUID } from 'crypto';
 import { Order } from './order.entity';
 import { Product } from './product.entity';
 import { StockUnit } from './stock.entity';
-import { uuidColumn } from '../config/db-types';
+import { uuidColumn, uuidPrimaryColumn } from '../config/db-types';
 
 @Entity('order_items')
 export class OrderItem {
-  @PrimaryColumn(uuidColumn())
+  @PrimaryColumn(uuidPrimaryColumn())
   id!: string;
 
   @Index()

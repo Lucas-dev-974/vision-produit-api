@@ -5,11 +5,11 @@ import {
   BeforeInsert,
 } from 'typeorm';
 import { randomUUID } from 'crypto';
-import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
+import { TIMESTAMPTZ_TYPE, uuidColumn, uuidPrimaryColumn } from '../config/db-types';
 
 @Entity('refresh_tokens')
 export class RefreshToken {
-  @PrimaryColumn(uuidColumn())
+  @PrimaryColumn(uuidPrimaryColumn())
   id!: string;
 
   @Column(uuidColumn({ name: 'user_id' }))

@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { Product } from './product.entity';
-import { uuidColumn } from '../config/db-types';
+import { uuidColumn, uuidPrimaryColumn } from '../config/db-types';
 
 export enum StockUnit {
   KG = 'kg',
@@ -23,7 +23,7 @@ export enum StockUnit {
 
 @Entity('stocks')
 export class Stock {
-  @PrimaryColumn(uuidColumn())
+  @PrimaryColumn(uuidPrimaryColumn())
   id!: string;
 
   @Index()

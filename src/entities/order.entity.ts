@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
-import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
+import { TIMESTAMPTZ_TYPE, uuidColumn, uuidPrimaryColumn } from '../config/db-types';
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -26,7 +26,7 @@ export enum OrderStatus {
 
 @Entity('orders')
 export class Order {
-  @PrimaryColumn(uuidColumn())
+  @PrimaryColumn(uuidPrimaryColumn())
   id!: string;
 
   @Index()

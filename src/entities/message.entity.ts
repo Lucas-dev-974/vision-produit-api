@@ -11,11 +11,11 @@ import {
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
 import { Conversation } from './conversation.entity';
-import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
+import { TIMESTAMPTZ_TYPE, uuidColumn, uuidPrimaryColumn } from '../config/db-types';
 
 @Entity('messages')
 export class Message {
-  @PrimaryColumn(uuidColumn())
+  @PrimaryColumn(uuidPrimaryColumn())
   id!: string;
 
   @Index()

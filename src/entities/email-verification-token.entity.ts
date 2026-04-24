@@ -8,11 +8,11 @@ import {
 } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
-import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
+import { TIMESTAMPTZ_TYPE, uuidColumn, uuidPrimaryColumn } from '../config/db-types';
 
 @Entity('email_verification_tokens')
 export class EmailVerificationToken {
-  @PrimaryColumn(uuidColumn())
+  @PrimaryColumn(uuidPrimaryColumn())
   id!: string;
 
   @Column(uuidColumn({ name: 'user_id' }))

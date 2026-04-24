@@ -11,12 +11,12 @@ import {
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
 import { Order } from './order.entity';
-import { uuidColumn } from '../config/db-types';
+import { uuidColumn, uuidPrimaryColumn } from '../config/db-types';
 
 @Entity('ratings')
 @Unique('UQ_ratings_order_rater', ['orderId', 'raterId'])
 export class Rating {
-  @PrimaryColumn(uuidColumn())
+  @PrimaryColumn(uuidPrimaryColumn())
   id!: string;
 
   @Index()

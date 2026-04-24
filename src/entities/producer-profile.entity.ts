@@ -12,12 +12,12 @@ import {
   DOUBLE_TYPE,
   JSON_ARRAY_DEFAULT,
   JSON_TYPE,
-  uuidColumn,
+  uuidPrimaryColumn,
 } from '../config/db-types';
 
 @Entity('producer_profiles')
 export class ProducerProfile {
-  @PrimaryColumn(uuidColumn())
+  @PrimaryColumn(uuidPrimaryColumn())
   id!: string;
 
   @OneToOne(() => User, { onDelete: 'CASCADE' })

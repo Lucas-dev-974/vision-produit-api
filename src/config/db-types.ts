@@ -1,4 +1,5 @@
 import type { ColumnOptions, ColumnType } from 'typeorm';
+import type { PrimaryColumnOptions } from 'typeorm/decorator/options/PrimaryColumnOptions';
 import { env } from './env';
 
 const isMysql = env.DB_TYPE === 'mysql';
@@ -22,6 +23,13 @@ export const JSON_ARRAY_DEFAULT = (): string =>
 export const uuidColumn = (
   overrides: Partial<ColumnOptions> = {},
 ): ColumnOptions =>
+  isMysql
+    ? { type: 'varchar', length: 36, ...overrides }
+    : { type: 'uuid', ...overrides };
+
+export const uuidPrimaryColumn = (
+  overrides: Partial<PrimaryColumnOptions> = {},
+): PrimaryColumnOptions =>
   isMysql
     ? { type: 'varchar', length: 36, ...overrides }
     : { type: 'uuid', ...overrides };

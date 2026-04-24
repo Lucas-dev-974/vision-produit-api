@@ -8,7 +8,7 @@ import {
   BeforeInsert,
 } from 'typeorm';
 import { randomUUID } from 'crypto';
-import { DOUBLE_TYPE, TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
+import { DOUBLE_TYPE, TIMESTAMPTZ_TYPE, uuidPrimaryColumn } from '../config/db-types';
 
 export enum UserRole {
   PRODUCER = 'producer',
@@ -26,7 +26,7 @@ export enum UserStatus {
 
 @Entity('users')
 export class User {
-  @PrimaryColumn(uuidColumn())
+  @PrimaryColumn(uuidPrimaryColumn())
   id!: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
