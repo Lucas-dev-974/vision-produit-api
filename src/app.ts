@@ -10,6 +10,10 @@ import { errorHandler } from './middlewares/error-handler';
 
 export function createApp(): express.Express {
   const app = express();
+  // L'app tourne derrière un reverse-proxy (Passenger/cPanel, nginx, etc.) qui
+  // injecte `X-Forwarded-For`. Nécessaire pour que `req.ip` et
+  // `express-rate-limit` utilisent la vraie IP client au lieu de refuser le header.
+  app.set('trust proxy', 1);
   app.use(helmet());
   app.use(
     cors({
