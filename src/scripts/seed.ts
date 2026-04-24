@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import type { DataSource } from 'typeorm';
 import { AppDataSource } from '../config/data-source';
+import { env } from '../config/env';
 import { logger } from '../lib/logger';
 import { hashPassword } from '../lib/password';
 import { User, UserRole, UserStatus } from '../entities/user.entity';
@@ -35,19 +36,39 @@ function addDaysIso(from: Date, days: number): string {
  */
 async function wipeApplicationData(dataSource: DataSource): Promise<void> {
   const excluded = new Set(['migrations']);
-  const rows: { tablename: string }[] = await dataSource.query(
-    `SELECT tablename FROM pg_tables WHERE schemaname = current_schema()`,
+  const isMysql = env.DB_TYPE === 'mysql';
+
+  const rows: Array<Record<string, string>> = await dataSource.query(
+    isMysql
+      ? `SELECT table_name AS tablename FROM information_schema.tables WHERE table_schema = DATABASE()`
+      : `SELECT tablename FROM pg_tables WHERE schemaname = current_schema()`,
   );
-  const tables = rows.map((r) => r.tablename).filter((t) => !excluded.has(t));
+  const tables = rows
+    .map((r) => r.tablename ?? r.TABLE_NAME)
+    .filter((t): t is string => typeof t === 'string' && !excluded.has(t));
+
   if (tables.length === 0) {
     logger.warn('Aucune table à vider (schéma vide ?)');
     return;
   }
-  const ident = tables.map((t) => `"${t.replace(/"/g, '""')}"`).join(', ');
-  await dataSource.query(`TRUNCATE TABLE ${ident} RESTART IDENTITY CASCADE`);
+
+  if (isMysql) {
+    await dataSource.query('SET FOREIGN_KEY_CHECKS = 0');
+    try {
+      for (const t of tables) {
+        await dataSource.query(`TRUNCATE TABLE \`${t.replace(/`/g, '``')}\``);
+      }
+    } finally {
+      await dataSource.query('SET FOREIGN_KEY_CHECKS = 1');
+    }
+  } else {
+    const ident = tables.map((t) => `"${t.replace(/"/g, '""')}"`).join(', ');
+    await dataSource.query(`TRUNCATE TABLE ${ident} RESTART IDENTITY CASCADE`);
+  }
+
   logger.info(
     { tableCount: tables.length },
-    'Base applicative vidée (TRUNCATE … CASCADE ; table migrations conservée)',
+    'Base applicative vidée (table migrations conservée)',
   );
 }
 
