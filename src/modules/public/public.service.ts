@@ -1,5 +1,4 @@
 import { AppDataSource } from '../../config/data-source';
-import { IS_MYSQL } from '../../config/db-types';
 import { AppError } from '../../common/errors/app-error';
 import { UserRole, UserStatus } from '../../entities/user.entity';
 import { ProducerProfile } from '../../entities/producer-profile.entity';
@@ -52,24 +51,17 @@ export const publicService = {
     pageSize: number,
   ): Promise<{ items: PublicProducerCard[]; total: number }> {
     const profileRepo = AppDataSource.getRepository(ProducerProfile);
+    // Note : MySQL met les NULLs en premier avec ASC, Postgres en dernier.
+    // On accepte cette divergence mineure pour garder une requête portable
+    // (un producteur sans `companyName` est en pratique quasi-inexistant).
     const qb = profileRepo
       .createQueryBuilder('profile')
       .innerJoinAndSelect('profile.user', 'user')
       .where('user.role = :role', { role: UserRole.PRODUCER })
       .andWhere('user.status = :status', { status: UserStatus.ACTIVE })
-      .andWhere('user.deletedAt IS NULL');
-
-    if (IS_MYSQL) {
-      // MySQL ne supporte pas `NULLS LAST`. On trie d'abord les non-NULL
-      // (`IS NULL = 0`) puis on ordonne alphabétiquement.
-      qb.orderBy('user.company_name IS NULL', 'ASC').addOrderBy(
-        'user.company_name',
-        'ASC',
-      );
-    } else {
-      qb.orderBy('user.companyName', 'ASC', 'NULLS LAST');
-    }
-    qb.addOrderBy('user.id', 'ASC');
+      .andWhere('user.deletedAt IS NULL')
+      .orderBy('user.companyName', 'ASC')
+      .addOrderBy('user.id', 'ASC');
 
     const total = await qb.getCount();
     const profiles = await qb
