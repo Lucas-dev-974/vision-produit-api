@@ -10,15 +10,16 @@ import {
 } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
+import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
 
 @Entity('conversations')
 @Unique('UQ_conversations_buyer_producer', ['buyerId', 'producerId'])
 export class Conversation {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn(uuidColumn())
   id!: string;
 
   @Index()
-  @Column({ type: 'uuid', name: 'buyer_id' })
+  @Column(uuidColumn({ name: 'buyer_id' }))
   buyerId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
@@ -26,7 +27,7 @@ export class Conversation {
   buyer!: User;
 
   @Index()
-  @Column({ type: 'uuid', name: 'producer_id' })
+  @Column(uuidColumn({ name: 'producer_id' }))
   producerId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
@@ -34,7 +35,7 @@ export class Conversation {
   producer!: User;
 
   @Index()
-  @Column({ type: 'timestamptz', name: 'last_message_at' })
+  @Column({ type: TIMESTAMPTZ_TYPE, name: 'last_message_at' })
   lastMessageAt!: Date;
 
   @BeforeInsert()

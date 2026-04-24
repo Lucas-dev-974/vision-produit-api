@@ -8,6 +8,7 @@ import {
   BeforeInsert,
 } from 'typeorm';
 import { randomUUID } from 'crypto';
+import { DOUBLE_TYPE, TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
 
 export enum UserRole {
   PRODUCER = 'producer',
@@ -25,7 +26,7 @@ export enum UserStatus {
 
 @Entity('users')
 export class User {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn(uuidColumn())
   id!: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
@@ -58,10 +59,10 @@ export class User {
   @Column({ type: 'varchar', length: 500, name: 'profile_photo_url', nullable: true })
   profilePhotoUrl!: string | null;
 
-  @Column({ type: 'double precision', name: 'location_lat', nullable: true })
+  @Column({ type: DOUBLE_TYPE, name: 'location_lat', nullable: true })
   locationLat!: number | null;
 
-  @Column({ type: 'double precision', name: 'location_lng', nullable: true })
+  @Column({ type: DOUBLE_TYPE, name: 'location_lng', nullable: true })
   locationLng!: number | null;
 
   @Column({ type: 'varchar', length: 255, name: 'address_line', nullable: true })
@@ -73,13 +74,13 @@ export class User {
   @Column({ type: 'varchar', length: 10, name: 'postal_code', nullable: true })
   postalCode!: string | null;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  @CreateDateColumn({ name: 'created_at', type: TIMESTAMPTZ_TYPE })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  @UpdateDateColumn({ name: 'updated_at', type: TIMESTAMPTZ_TYPE })
   updatedAt!: Date;
 
-  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamptz', nullable: true })
+  @DeleteDateColumn({ name: 'deleted_at', type: TIMESTAMPTZ_TYPE, nullable: true })
   deletedAt!: Date | null;
 
   @BeforeInsert()

@@ -11,21 +11,22 @@ import {
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
 import { Conversation } from './conversation.entity';
+import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
 
 @Entity('messages')
 export class Message {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn(uuidColumn())
   id!: string;
 
   @Index()
-  @Column({ type: 'uuid', name: 'conversation_id' })
+  @Column(uuidColumn({ name: 'conversation_id' }))
   conversationId!: string;
 
   @ManyToOne(() => Conversation, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'conversation_id' })
   conversation!: Conversation;
 
-  @Column({ type: 'uuid', name: 'sender_id' })
+  @Column(uuidColumn({ name: 'sender_id' }))
   senderId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
@@ -35,11 +36,11 @@ export class Message {
   @Column({ type: 'varchar', length: 2000 })
   content!: string;
 
-  @Column({ type: 'timestamptz', name: 'read_at', nullable: true })
+  @Column({ type: TIMESTAMPTZ_TYPE, name: 'read_at', nullable: true })
   readAt!: Date | null;
 
   @Index()
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  @CreateDateColumn({ name: 'created_at', type: TIMESTAMPTZ_TYPE })
   createdAt!: Date;
 
   @BeforeInsert()

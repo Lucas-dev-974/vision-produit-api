@@ -11,21 +11,22 @@ import { randomUUID } from 'crypto';
 import { Order } from './order.entity';
 import { Product } from './product.entity';
 import { StockUnit } from './stock.entity';
+import { uuidColumn } from '../config/db-types';
 
 @Entity('order_items')
 export class OrderItem {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn(uuidColumn())
   id!: string;
 
   @Index()
-  @Column({ type: 'uuid', name: 'order_id' })
+  @Column(uuidColumn({ name: 'order_id' }))
   orderId!: string;
 
   @ManyToOne(() => Order, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'order_id' })
   order!: Order;
 
-  @Column({ type: 'uuid', name: 'product_id' })
+  @Column(uuidColumn({ name: 'product_id' }))
   productId!: string;
 
   @ManyToOne(() => Product, { onDelete: 'RESTRICT' })

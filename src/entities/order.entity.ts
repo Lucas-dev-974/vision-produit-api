@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
+import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -25,11 +26,11 @@ export enum OrderStatus {
 
 @Entity('orders')
 export class Order {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn(uuidColumn())
   id!: string;
 
   @Index()
-  @Column({ type: 'uuid', name: 'buyer_id' })
+  @Column(uuidColumn({ name: 'buyer_id' }))
   buyerId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
@@ -37,7 +38,7 @@ export class Order {
   buyer!: User;
 
   @Index()
-  @Column({ type: 'uuid', name: 'producer_id' })
+  @Column(uuidColumn({ name: 'producer_id' }))
   producerId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
@@ -67,20 +68,20 @@ export class Order {
   @Column({ type: 'text', name: 'refusal_reason', nullable: true })
   refusalReason!: string | null;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  @CreateDateColumn({ name: 'created_at', type: TIMESTAMPTZ_TYPE })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  @UpdateDateColumn({ name: 'updated_at', type: TIMESTAMPTZ_TYPE })
   updatedAt!: Date;
 
   /**
    * Legacy : conservé en base, non utilisé pour le comptage des pastilles.
    * Voir notifRevision / *NotifRevisionAck.
    */
-  @Column({ type: 'timestamptz', name: 'buyer_seen_at', nullable: true })
+  @Column({ type: TIMESTAMPTZ_TYPE, name: 'buyer_seen_at', nullable: true })
   buyerSeenAt!: Date | null;
 
-  @Column({ type: 'timestamptz', name: 'producer_seen_at', nullable: true })
+  @Column({ type: TIMESTAMPTZ_TYPE, name: 'producer_seen_at', nullable: true })
   producerSeenAt!: Date | null;
 
   /**

@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
+import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
 
 export enum ProductCategory {
   FRUITS = 'fruits',
@@ -24,11 +25,11 @@ export enum ProductCategory {
 
 @Entity('products')
 export class Product {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn(uuidColumn())
   id!: string;
 
   @Index()
-  @Column({ type: 'uuid', name: 'producer_id' })
+  @Column(uuidColumn({ name: 'producer_id' }))
   producerId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
@@ -48,10 +49,10 @@ export class Product {
   @Column({ type: 'text' })
   description!: string;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  @CreateDateColumn({ name: 'created_at', type: TIMESTAMPTZ_TYPE })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  @UpdateDateColumn({ name: 'updated_at', type: TIMESTAMPTZ_TYPE })
   updatedAt!: Date;
 
   @BeforeInsert()

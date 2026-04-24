@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { Product } from './product.entity';
+import { uuidColumn } from '../config/db-types';
 
 export enum StockUnit {
   KG = 'kg',
@@ -22,11 +23,11 @@ export enum StockUnit {
 
 @Entity('stocks')
 export class Stock {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn(uuidColumn())
   id!: string;
 
   @Index()
-  @Column({ type: 'uuid', name: 'product_id' })
+  @Column(uuidColumn({ name: 'product_id' }))
   productId!: string;
 
   @ManyToOne(() => Product, { onDelete: 'CASCADE' })

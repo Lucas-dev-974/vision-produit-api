@@ -8,13 +8,14 @@ import {
 } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
+import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
 
 @Entity('email_verification_tokens')
 export class EmailVerificationToken {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn(uuidColumn())
   id!: string;
 
-  @Column({ type: 'uuid', name: 'user_id' })
+  @Column(uuidColumn({ name: 'user_id' }))
   userId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
@@ -24,10 +25,10 @@ export class EmailVerificationToken {
   @Column({ type: 'varchar', length: 64, name: 'token_hash' })
   tokenHash!: string;
 
-  @Column({ type: 'timestamptz', name: 'expires_at' })
+  @Column({ type: TIMESTAMPTZ_TYPE, name: 'expires_at' })
   expiresAt!: Date;
 
-  @Column({ type: 'timestamptz', name: 'used_at', nullable: true })
+  @Column({ type: TIMESTAMPTZ_TYPE, name: 'used_at', nullable: true })
   usedAt!: Date | null;
 
   @BeforeInsert()

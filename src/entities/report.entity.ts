@@ -10,6 +10,7 @@ import {
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
 import { Message } from './message.entity';
+import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
 
 export enum ReportCategory {
   FAKE_PROFILE = 'fake_profile',
@@ -28,10 +29,10 @@ export enum ReportStatus {
 
 @Entity('reports')
 export class Report {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn(uuidColumn())
   id!: string;
 
-  @Column({ type: 'uuid', name: 'reporter_id' })
+  @Column(uuidColumn({ name: 'reporter_id' }))
   reporterId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
@@ -39,14 +40,14 @@ export class Report {
   reporter!: User;
 
   @Index()
-  @Column({ type: 'uuid', name: 'target_user_id', nullable: true })
+  @Column(uuidColumn({ name: 'target_user_id', nullable: true }))
   targetUserId!: string | null;
 
   @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'target_user_id' })
   targetUser!: User | null;
 
-  @Column({ type: 'uuid', name: 'target_message_id', nullable: true })
+  @Column(uuidColumn({ name: 'target_message_id', nullable: true }))
   targetMessageId!: string | null;
 
   @ManyToOne(() => Message, { onDelete: 'SET NULL', nullable: true })
@@ -75,7 +76,7 @@ export class Report {
   @Column({ type: 'text', name: 'admin_notes', nullable: true })
   adminNotes!: string | null;
 
-  @Column({ type: 'timestamptz', name: 'resolved_at', nullable: true })
+  @Column({ type: TIMESTAMPTZ_TYPE, name: 'resolved_at', nullable: true })
   resolvedAt!: Date | null;
 
   @BeforeInsert()

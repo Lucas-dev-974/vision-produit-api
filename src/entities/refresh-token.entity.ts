@@ -5,19 +5,20 @@ import {
   BeforeInsert,
 } from 'typeorm';
 import { randomUUID } from 'crypto';
+import { TIMESTAMPTZ_TYPE, uuidColumn } from '../config/db-types';
 
 @Entity('refresh_tokens')
 export class RefreshToken {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn(uuidColumn())
   id!: string;
 
-  @Column({ type: 'uuid', name: 'user_id' })
+  @Column(uuidColumn({ name: 'user_id' }))
   userId!: string;
 
   @Column({ type: 'varchar', length: 64, name: 'token_hash' })
   tokenHash!: string;
 
-  @Column({ type: 'timestamptz', name: 'expires_at' })
+  @Column({ type: TIMESTAMPTZ_TYPE, name: 'expires_at' })
   expiresAt!: Date;
 
   @Column({ type: 'boolean', default: false })

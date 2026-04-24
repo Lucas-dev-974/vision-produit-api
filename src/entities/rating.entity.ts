@@ -11,29 +11,30 @@ import {
 import { randomUUID } from 'crypto';
 import { User } from './user.entity';
 import { Order } from './order.entity';
+import { uuidColumn } from '../config/db-types';
 
 @Entity('ratings')
 @Unique('UQ_ratings_order_rater', ['orderId', 'raterId'])
 export class Rating {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn(uuidColumn())
   id!: string;
 
   @Index()
-  @Column({ type: 'uuid', name: 'order_id' })
+  @Column(uuidColumn({ name: 'order_id' }))
   orderId!: string;
 
   @ManyToOne(() => Order, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'order_id' })
   order!: Order;
 
-  @Column({ type: 'uuid', name: 'rater_id' })
+  @Column(uuidColumn({ name: 'rater_id' }))
   raterId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'rater_id' })
   rater!: User;
 
-  @Column({ type: 'uuid', name: 'rated_id' })
+  @Column(uuidColumn({ name: 'rated_id' }))
   ratedId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
