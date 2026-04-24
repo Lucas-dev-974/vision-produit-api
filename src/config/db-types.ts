@@ -3,7 +3,9 @@ import { env } from './env';
 
 type PrimaryColumnOptions = ColumnOptions & { nullable?: false };
 
-const isMysql = env.DB_TYPE === 'mysql';
+export const IS_MYSQL = env.DB_TYPE === 'mysql';
+
+const isMysql = IS_MYSQL;
 
 /**
  * Alias de types de colonnes portables MySQL/PostgreSQL.

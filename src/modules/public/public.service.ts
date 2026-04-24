@@ -1,4 +1,5 @@
 import { AppDataSource } from '../../config/data-source';
+import { IS_MYSQL } from '../../config/db-types';
 import { AppError } from '../../common/errors/app-error';
 import { UserRole, UserStatus } from '../../entities/user.entity';
 import { ProducerProfile } from '../../entities/producer-profile.entity';
@@ -56,9 +57,19 @@ export const publicService = {
       .innerJoinAndSelect('profile.user', 'user')
       .where('user.role = :role', { role: UserRole.PRODUCER })
       .andWhere('user.status = :status', { status: UserStatus.ACTIVE })
-      .andWhere('user.deletedAt IS NULL')
-      .orderBy('user.companyName', 'ASC', 'NULLS LAST')
-      .addOrderBy('user.id', 'ASC');
+      .andWhere('user.deletedAt IS NULL');
+
+    if (IS_MYSQL) {
+      // MySQL ne supporte pas `NULLS LAST`. On trie d'abord les non-NULL
+      // (`IS NULL = 0`) puis on ordonne alphabétiquement.
+      qb.orderBy('user.company_name IS NULL', 'ASC').addOrderBy(
+        'user.company_name',
+        'ASC',
+      );
+    } else {
+      qb.orderBy('user.companyName', 'ASC', 'NULLS LAST');
+    }
+    qb.addOrderBy('user.id', 'ASC');
 
     const total = await qb.getCount();
     const profiles = await qb
@@ -156,7 +167,7 @@ export const publicService = {
       .innerJoinAndSelect('s.product', 'p')
       .where('p.producer_id = :producerId', { producerId: userId })
       .andWhere('s.expires_at >= :today', { today })
-      .andWhere('s.quantity::numeric > 0')
+      .andWhere('s.quantity > 0')
       .orderBy('p.name', 'ASC')
       .addOrderBy('s.expires_at', 'ASC')
       .getMany();

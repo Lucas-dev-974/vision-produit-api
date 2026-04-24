@@ -70,9 +70,9 @@ export const searchService = {
     }
 
     if (q && q.trim()) {
-      const term = `%${q.trim().replace(/%/g, '\\%')}%`;
+      const term = `%${q.trim().replace(/%/g, '\\%').toLowerCase()}%`;
       qb.andWhere(
-        '(user.company_name ILIKE :term OR user.description ILIKE :term)',
+        '(LOWER(user.company_name) LIKE :term OR LOWER(user.description) LIKE :term)',
         { term },
       );
     }
@@ -124,18 +124,18 @@ export const searchService = {
     pageSize: number,
   ): Promise<{ items: SearchProductHit[]; total: number }> {
     const today = new Date().toISOString().slice(0, 10);
-    const term = `%${query.trim().replace(/%/g, '\\%')}%`;
+    const term = `%${query.trim().replace(/%/g, '\\%').toLowerCase()}%`;
     const stockRepo = AppDataSource.getRepository(Stock);
     const qb = stockRepo
       .createQueryBuilder('s')
       .innerJoinAndSelect('s.product', 'p')
       .innerJoinAndSelect('p.producer', 'producer')
       .where('s.expires_at >= :today', { today })
-      .andWhere('s.quantity::numeric > 0')
+      .andWhere('s.quantity > 0')
       .andWhere('producer.role = :role', { role: UserRole.PRODUCER })
       .andWhere('producer.status = :status', { status: UserStatus.ACTIVE })
       .andWhere('producer.deletedAt IS NULL')
-      .andWhere('(p.name ILIKE :term OR p.description ILIKE :term)', { term })
+      .andWhere('(LOWER(p.name) LIKE :term OR LOWER(p.description) LIKE :term)', { term })
       .orderBy('s.expires_at', 'ASC');
 
     const all = await qb.getMany();
