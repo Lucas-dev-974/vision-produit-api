@@ -17,7 +17,7 @@ import { EmailVerificationToken } from '../entities/email-verification-token.ent
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 
 export const AppDataSource = new DataSource({
-  type: 'postgres',
+  type: env.DB_TYPE || 'mysql',
   host: env.DB_HOST,
   port: env.DB_PORT,
   username: env.DB_USER,
