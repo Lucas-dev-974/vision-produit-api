@@ -26,3 +26,10 @@ export const resetPasswordBodySchema = z.object({
 export const verifyEmailBodySchema = z.object({
   token: z.string().min(1),
 });
+
+export const registerWithInviteBodySchema = z.object({
+  inviteToken: z.string().min(20).max(128),
+  password: z.string().min(12).max(128),
+  siret: siretSchema,
+  role: z.enum(['producer', 'buyer']),
+});

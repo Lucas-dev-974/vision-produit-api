@@ -8,7 +8,8 @@ export type ErrorCode =
   | 'INTERNAL_ERROR'
   | 'SIRET_INVALID'
   | 'EMAIL_ALREADY_USED'
-  | 'SIRET_ALREADY_USED';
+  | 'SIRET_ALREADY_USED'
+  | 'ACCESS_NOT_OPEN';
 
 export class AppError extends Error {
   constructor(

@@ -15,6 +15,8 @@ import { Rating } from '../entities/rating.entity';
 import { Report } from '../entities/report.entity';
 import { EmailVerificationToken } from '../entities/email-verification-token.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
+import { PreRegistration } from '../entities/pre-registration.entity';
+import { AdminAuditLog } from '../entities/admin-audit-log.entity';
 
 export const AppDataSource = new DataSource({
   type: env.DB_TYPE || 'mysql',
@@ -37,6 +39,8 @@ export const AppDataSource = new DataSource({
     Report,
     EmailVerificationToken,
     PasswordResetToken,
+    PreRegistration,
+    AdminAuditLog,
   ],
   migrations: [path.join(__dirname, '..', 'migrations', '*.{ts,js}')],
   synchronize: env.DB_SYNC,

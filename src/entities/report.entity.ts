@@ -5,6 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   BeforeInsert,
+  CreateDateColumn,
   Index,
 } from 'typeorm';
 import { randomUUID } from 'crypto';
@@ -78,6 +79,9 @@ export class Report {
 
   @Column({ type: TIMESTAMPTZ_TYPE, name: 'resolved_at', nullable: true })
   resolvedAt!: Date | null;
+
+  @CreateDateColumn({ name: 'created_at', type: TIMESTAMPTZ_TYPE })
+  createdAt!: Date;
 
   @BeforeInsert()
   setId(): void {

@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { createHash, randomBytes } from 'crypto';
 import type { DataSource } from 'typeorm';
 import { AppDataSource } from '../config/data-source';
 import { env } from '../config/env';
@@ -13,6 +14,17 @@ import { OrderItem } from '../entities/order-item.entity';
 import { Conversation } from '../entities/conversation.entity';
 import { Message } from '../entities/message.entity';
 import {
+  PreRegistration,
+  PreRegistrationRole,
+  PreRegistrationStatus,
+} from '../entities/pre-registration.entity';
+import { Report, ReportCategory, ReportStatus } from '../entities/report.entity';
+import {
+  AdminAuditLog,
+  AdminAuditTargetType,
+} from '../entities/admin-audit-log.entity';
+import {
+  SEED_ADMINS,
   SEED_DEMO_BUYER,
   SEED_DEMO_CONVERSATION,
   SEED_DEMO_MESSAGES,
@@ -20,8 +32,13 @@ import {
   SEED_DEMO_PRODUCTS,
   SEED_DEMO_PRODUCER,
   SEED_DEMO_STOCKS,
+  SEED_PENDING_BUYER,
+  SEED_PENDING_PRODUCER,
+  SEED_PRE_REGISTRATIONS,
   SEED_PRODUCERS,
+  SEED_REPORTS,
   SEED_SHARED_PASSWORD,
+  SEED_SUSPENDED_PRODUCER,
 } from './seed-data';
 
 function addDaysIso(from: Date, days: number): string {
@@ -294,9 +311,254 @@ async function run(): Promise<void> {
     logger.info({ email: row.email }, 'Producteur seed créé');
   }
 
+  // --- Comptes admin ---
+  const admins: User[] = [];
+  for (const a of SEED_ADMINS) {
+    const admin = userRepo.create({
+      id: a.id,
+      email: a.email,
+      passwordHash,
+      role: UserRole.ADMIN,
+      status: UserStatus.ACTIVE,
+      siret: a.siret,
+      companyName: a.companyName,
+      nafCode: a.nafCode,
+      phone: null,
+      description: 'Compte admin (seed).',
+      profilePhotoUrl: null,
+      locationLat: null,
+      locationLng: null,
+      addressLine: null,
+      city: 'Saint-Denis',
+      postalCode: '97400',
+    });
+    await userRepo.save(admin);
+    admins.push(admin);
+    logger.info({ id: a.id, email: a.email }, 'Admin seed créé');
+  }
+  const primaryAdminId = admins[0].id;
+
+  // --- Compte producteur en attente d'approbation ---
+  const pendingProducer = userRepo.create({
+    id: SEED_PENDING_PRODUCER.id,
+    email: SEED_PENDING_PRODUCER.email,
+    passwordHash,
+    role: UserRole.PRODUCER,
+    status: UserStatus.PENDING_ADMIN,
+    siret: SEED_PENDING_PRODUCER.siret,
+    companyName: SEED_PENDING_PRODUCER.companyName,
+    nafCode: SEED_PENDING_PRODUCER.nafCode,
+    phone: SEED_PENDING_PRODUCER.phone,
+    description: SEED_PENDING_PRODUCER.description,
+    profilePhotoUrl: null,
+    locationLat: SEED_PENDING_PRODUCER.locationLat,
+    locationLng: SEED_PENDING_PRODUCER.locationLng,
+    addressLine: SEED_PENDING_PRODUCER.addressLine,
+    city: SEED_PENDING_PRODUCER.city,
+    postalCode: SEED_PENDING_PRODUCER.postalCode,
+  });
+  await userRepo.save(pendingProducer);
+  await profileRepo.save(
+    profileRepo.create({
+      user: pendingProducer,
+      publicLocationLat: SEED_PENDING_PRODUCER.locationLat,
+      publicLocationLng: SEED_PENDING_PRODUCER.locationLng,
+      averageRating: 0,
+      totalRatings: 0,
+      reliabilityScore: 0,
+      totalOrders: 0,
+      additionalPhotos: [],
+    }),
+  );
+
+  // --- Compte commerçant en attente d'approbation ---
+  const pendingBuyer = userRepo.create({
+    id: SEED_PENDING_BUYER.id,
+    email: SEED_PENDING_BUYER.email,
+    passwordHash,
+    role: UserRole.BUYER,
+    status: UserStatus.PENDING_ADMIN,
+    siret: SEED_PENDING_BUYER.siret,
+    companyName: SEED_PENDING_BUYER.companyName,
+    nafCode: SEED_PENDING_BUYER.nafCode,
+    phone: SEED_PENDING_BUYER.phone,
+    description: SEED_PENDING_BUYER.description,
+    profilePhotoUrl: null,
+    locationLat: SEED_PENDING_BUYER.locationLat,
+    locationLng: SEED_PENDING_BUYER.locationLng,
+    addressLine: SEED_PENDING_BUYER.addressLine,
+    city: SEED_PENDING_BUYER.city,
+    postalCode: SEED_PENDING_BUYER.postalCode,
+  });
+  await userRepo.save(pendingBuyer);
+
+  // --- Compte producteur suspendu ---
+  const suspendedProducer = userRepo.create({
+    id: SEED_SUSPENDED_PRODUCER.id,
+    email: SEED_SUSPENDED_PRODUCER.email,
+    passwordHash,
+    role: UserRole.PRODUCER,
+    status: UserStatus.SUSPENDED,
+    siret: SEED_SUSPENDED_PRODUCER.siret,
+    companyName: SEED_SUSPENDED_PRODUCER.companyName,
+    nafCode: SEED_SUSPENDED_PRODUCER.nafCode,
+    phone: SEED_SUSPENDED_PRODUCER.phone,
+    description: SEED_SUSPENDED_PRODUCER.description,
+    profilePhotoUrl: null,
+    locationLat: SEED_SUSPENDED_PRODUCER.locationLat,
+    locationLng: SEED_SUSPENDED_PRODUCER.locationLng,
+    addressLine: SEED_SUSPENDED_PRODUCER.addressLine,
+    city: SEED_SUSPENDED_PRODUCER.city,
+    postalCode: SEED_SUSPENDED_PRODUCER.postalCode,
+  });
+  await userRepo.save(suspendedProducer);
+  await profileRepo.save(
+    profileRepo.create({
+      user: suspendedProducer,
+      publicLocationLat: SEED_SUSPENDED_PRODUCER.locationLat,
+      publicLocationLng: SEED_SUSPENDED_PRODUCER.locationLng,
+      averageRating: 3.4,
+      totalRatings: 4,
+      reliabilityScore: 60,
+      totalOrders: 3,
+      additionalPhotos: [],
+    }),
+  );
+
+  logger.info(
+    {
+      pendingProducerId: pendingProducer.id,
+      pendingBuyerId: pendingBuyer.id,
+      suspendedProducerId: suspendedProducer.id,
+    },
+    'Comptes en attente / suspendu créés',
+  );
+
+  // --- Pré-inscriptions ---
+  const preRegRepo = AppDataSource.getRepository(PreRegistration);
+  const fourteenDaysFromNow = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+  for (const row of SEED_PRE_REGISTRATIONS) {
+    const isPendingEmail = row.status === 'pending_email';
+    const isInvited = row.status === 'invited';
+    let confirmationTokenHash: string | null = null;
+    let confirmationTokenExpiresAt: Date | null = null;
+    let inviteTokenHash: string | null = null;
+
+    if (isPendingEmail) {
+      const t = randomBytes(32).toString('hex');
+      confirmationTokenHash = createHash('sha256').update(t).digest('hex');
+      confirmationTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    }
+    if (isInvited) {
+      // Token connu pour pouvoir tester l'invitation à la main si besoin.
+      const t = `seed-invite-${row.id}`;
+      inviteTokenHash = createHash('sha256').update(t).digest('hex');
+    }
+
+    await preRegRepo.save(
+      preRegRepo.create({
+        id: row.id,
+        email: row.email,
+        role: row.role as PreRegistrationRole,
+        companyName: row.companyName,
+        siret: row.siret,
+        phone: row.phone,
+        city: row.city,
+        postalCode: row.postalCode,
+        message: row.message,
+        consentRgpd: row.consentRgpd,
+        status: row.status as PreRegistrationStatus,
+        source: 'seed',
+        confirmationTokenHash,
+        confirmationTokenExpiresAt,
+        emailConfirmedAt:
+          'emailConfirmed' in row && row.emailConfirmed ? new Date() : null,
+        inviteTokenHash,
+        inviteTokenExpiresAt: isInvited ? fourteenDaysFromNow : null,
+        invitedAt: isInvited ? new Date() : null,
+        acceptedAt: null,
+        acceptedUserId: null,
+        createdIp: null,
+      }),
+    );
+  }
+  logger.info(
+    { count: SEED_PRE_REGISTRATIONS.length },
+    'Pré-inscriptions seed créées',
+  );
+
+  // --- Signalements ---
+  const reportRepo = AppDataSource.getRepository(Report);
+  const reporterId = demoBuyer.id;
+  const targetUserId = demoProducer.id;
+  const targetMessageId = SEED_DEMO_MESSAGES[1].id;
+
+  for (const row of SEED_REPORTS) {
+    await reportRepo.save(
+      reportRepo.create({
+        id: row.id,
+        reporterId,
+        targetUserId: row.targetType === 'user' ? targetUserId : null,
+        targetMessageId: row.targetType === 'message' ? targetMessageId : null,
+        category: row.category as ReportCategory,
+        description: row.description,
+        status: row.status as ReportStatus,
+        adminNotes: row.adminNotes,
+        resolvedAt:
+          row.status === 'resolved' || (row.status as string) === 'dismissed'
+            ? new Date()
+            : null,
+      }),
+    );
+  }
+  logger.info({ count: SEED_REPORTS.length }, 'Signalements seed créés');
+
+  // --- Audit log : trace initiale "seed" ---
+  const auditRepo = AppDataSource.getRepository(AdminAuditLog);
+  await auditRepo.save(
+    auditRepo.create({
+      adminId: primaryAdminId,
+      action: 'seed.bootstrap',
+      targetType: AdminAuditTargetType.SYSTEM,
+      targetId: null,
+      payload: {
+        producers: SEED_PRODUCERS.length,
+        demoOrders: SEED_DEMO_ORDERS.length,
+        preRegistrations: SEED_PRE_REGISTRATIONS.length,
+        reports: SEED_REPORTS.length,
+      },
+    }),
+  );
+  // Une trace réaliste : l'admin a "approuvé" le commerçant démo (déjà actif).
+  await auditRepo.save(
+    auditRepo.create({
+      adminId: primaryAdminId,
+      action: 'user.approve',
+      targetType: AdminAuditTargetType.USER,
+      targetId: demoBuyer.id,
+      payload: { source: 'seed' },
+    }),
+  );
+  // Et un signalement "résolu" est tracé.
+  const resolvedReport = SEED_REPORTS.find((r) => r.status === 'resolved');
+  if (resolvedReport) {
+    await auditRepo.save(
+      auditRepo.create({
+        adminId: primaryAdminId,
+        action: 'report.resolve',
+        targetType: AdminAuditTargetType.REPORT,
+        targetId: resolvedReport.id,
+        payload: { status: 'resolved', source: 'seed' },
+      }),
+    );
+  }
+
   logger.info(
     {
       bulkProducers: SEED_PRODUCERS.length,
+      admins: SEED_ADMINS.length,
+      preRegistrations: SEED_PRE_REGISTRATIONS.length,
+      reports: SEED_REPORTS.length,
       demoProducerId: SEED_DEMO_PRODUCER.id,
       demoBuyerId: SEED_DEMO_BUYER.id,
       password: SEED_SHARED_PASSWORD,

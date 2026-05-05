@@ -19,6 +19,22 @@ export const authController = {
     res.status(201).json({ data: user });
   },
 
+  registerWithInvite: async (req: Request, res: Response): Promise<void> => {
+    const { inviteToken, password, siret, role } = req.body as {
+      inviteToken: string;
+      password: string;
+      siret: string;
+      role: 'producer' | 'buyer';
+    };
+    const { user } = await authService.registerWithInvite({
+      inviteToken,
+      password,
+      siret,
+      role,
+    });
+    res.status(201).json({ data: user });
+  },
+
   login: async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body as { email: string; password: string };
     const ip = req.ip;

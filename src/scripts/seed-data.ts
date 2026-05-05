@@ -6,6 +6,179 @@
 /** Mot de passe commun à tous les comptes créés par le seed (@seed.monappli.re). */
 export const SEED_SHARED_PASSWORD = 'SeedMonAppli2026!';
 
+/** Comptes admin de seed (rôle `admin`, statut `active`). */
+export const SEED_ADMINS = [
+  {
+    id: 'a0000001-0000-4000-8000-0000000000a1',
+    email: 'admin@seed.monappli.re',
+    siret: '98403748900900',
+    companyName: 'MonAppli — Équipe',
+    nafCode: '63.12Z',
+  },
+  {
+    id: 'a0000001-0000-4000-8000-0000000000a2',
+    email: 'admin-test@seed.monappli.re',
+    siret: '98403748900901',
+    companyName: 'MonAppli — Test',
+    nafCode: '63.12Z',
+  },
+] as const;
+
+/** Comptes en attente d'approbation par un admin. */
+export const SEED_PENDING_PRODUCER = {
+  id: 'a0000001-0000-4000-8000-0000000000b1',
+  email: 'attente-producteur@seed.monappli.re',
+  siret: '98403748900910',
+  companyName: 'En attente — Maraîcher de la Saline',
+  nafCode: '01.13Z',
+  description: 'Compte en attente d\u2019approbation administrateur (seed).',
+  city: 'Saint-Paul',
+  postalCode: '97435',
+  addressLine: 'Adresse à valider',
+  phone: '+262692009910',
+  locationLat: -21.0744,
+  locationLng: 55.2306,
+} as const;
+
+export const SEED_PENDING_BUYER = {
+  id: 'a0000001-0000-4000-8000-0000000000b2',
+  email: 'attente-commercant@seed.monappli.re',
+  siret: '98403748900911',
+  companyName: 'En attente — Boucherie de l\u2019Est',
+  nafCode: '47.22Z',
+  description: 'Compte en attente d\u2019approbation administrateur (seed).',
+  city: 'Saint-André',
+  postalCode: '97440',
+  addressLine: 'Adresse à valider',
+  phone: '+262692009911',
+  locationLat: -20.9613,
+  locationLng: 55.6533,
+} as const;
+
+/** Compte producteur suspendu (pour tester la réactivation). */
+export const SEED_SUSPENDED_PRODUCER = {
+  id: 'a0000001-0000-4000-8000-0000000000b3',
+  email: 'suspendu-producteur@seed.monappli.re',
+  siret: '98403748900912',
+  companyName: 'Suspendu — Vergers de Bras-Panon',
+  nafCode: '01.24Z',
+  description: 'Compte suspendu (seed) — motif : test workflow.',
+  city: 'Bras-Panon',
+  postalCode: '97412',
+  addressLine: 'Adresse',
+  phone: '+262692009912',
+  locationLat: -21.0103,
+  locationLng: 55.6817,
+} as const;
+
+/** Pré-inscriptions de seed couvrant les principaux statuts. */
+export const SEED_PRE_REGISTRATIONS = [
+  {
+    id: 'd0000001-0000-4000-8000-000000000001',
+    email: 'attente-email@seed.monappli.re',
+    role: 'producer' as const,
+    companyName: 'À confirmer — Apicultrice de Cilaos',
+    siret: null,
+    phone: null,
+    city: 'Cilaos',
+    postalCode: '97413',
+    message: 'Pré-inscrite, doit confirmer son e-mail.',
+    consentRgpd: true,
+    status: 'pending_email' as const,
+  },
+  {
+    id: 'd0000001-0000-4000-8000-000000000002',
+    email: 'a-revoir@seed.monappli.re',
+    role: 'buyer' as const,
+    companyName: 'Restaurant Le Volcan',
+    siret: '98403748900920',
+    phone: '+262692009920',
+    city: 'Le Tampon',
+    postalCode: '97430',
+    message: 'Souhaite acheter des fruits tropicaux pour la carte des desserts.',
+    consentRgpd: true,
+    status: 'pending_review' as const,
+    emailConfirmed: true,
+  },
+  {
+    id: 'd0000001-0000-4000-8000-000000000003',
+    email: 'contacte@seed.monappli.re',
+    role: 'producer' as const,
+    companyName: 'Jardin créole de l\u2019Étang-Salé',
+    siret: '98403748900921',
+    phone: '+262692009921',
+    city: 'L\u2019Étang-Salé',
+    postalCode: '97427',
+    message: null,
+    consentRgpd: true,
+    status: 'contacted' as const,
+    emailConfirmed: true,
+  },
+  {
+    id: 'd0000001-0000-4000-8000-000000000004',
+    email: 'invite@seed.monappli.re',
+    role: 'buyer' as const,
+    companyName: 'Épicerie fine du Centre',
+    siret: '98403748900922',
+    phone: null,
+    city: 'Saint-Denis',
+    postalCode: '97400',
+    message: null,
+    consentRgpd: true,
+    status: 'invited' as const,
+    emailConfirmed: true,
+  },
+  {
+    id: 'd0000001-0000-4000-8000-000000000005',
+    email: 'refuse@seed.monappli.re',
+    role: 'undecided' as const,
+    companyName: 'Profil incomplet',
+    siret: null,
+    phone: null,
+    city: null,
+    postalCode: null,
+    message: 'Profil non éligible au périmètre V1.',
+    consentRgpd: true,
+    status: 'rejected' as const,
+    emailConfirmed: true,
+  },
+] as const;
+
+/**
+ * Signalements de seed (UUID fixes).
+ *
+ * Note : un UUID ne contient que des caractères hexadécimaux (0-9, a-f). On
+ * utilise donc un préfixe `c0000003-…` (et non `r…`) pour rester valide côté
+ * Postgres (`uuid` strict).
+ */
+export const SEED_REPORTS = [
+  {
+    id: 'c0000003-0000-4000-8000-000000000001',
+    category: 'fake_profile' as const,
+    description: 'Profil semble usurpé : SIRET non concordant avec les photos publiées.',
+    status: 'open' as const,
+    adminNotes: null as string | null,
+    /** Cible : producteur démo. Reporter : commerçant démo. */
+    targetType: 'user' as const,
+  },
+  {
+    id: 'c0000003-0000-4000-8000-000000000002',
+    category: 'inappropriate_content' as const,
+    description: 'Message contenant un démarchage hors plateforme.',
+    status: 'reviewed' as const,
+    adminNotes: 'À surveiller — premier avertissement envoyé.',
+    targetType: 'message' as const,
+  },
+  {
+    id: 'c0000003-0000-4000-8000-000000000003',
+    category: 'scam' as const,
+    description: 'Tentative de paiement direct hors plateforme avec rabais douteux.',
+    status: 'resolved' as const,
+    adminNotes: 'Vérification effectuée, fausse alerte (mauvaise interprétation).',
+    targetType: 'user' as const,
+  },
+] as const;
+
 /** Producteur de démo : UUID fixes pour documentation et tests. */
 export const SEED_DEMO_PRODUCER = {
   id: 'a0000001-0000-4000-8000-000000000001',

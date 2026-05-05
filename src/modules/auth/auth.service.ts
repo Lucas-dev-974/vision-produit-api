@@ -9,6 +9,7 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../lib
 import { validateSiretWithInsee } from '../../lib/insee';
 import { sendVerificationEmail } from '../../lib/email';
 import { Not } from 'typeorm';
+import { preRegistrationsService } from '../pre-registrations/pre-registrations.service';
 
 export interface PublicUser {
   id: string;
@@ -97,6 +98,55 @@ export const authService = {
     return { user: toPublicUser(user) };
   },
 
+  /**
+   * Inscription accélérée via un token d'invitation envoyé par un admin.
+   * Bypass du `appAccessGate` : la route `/auth/register-with-invite` n'est
+   * pas gardée par le gate de pré-lancement. L'email étant déjà confirmé via
+   * la pré-inscription et l'admin ayant explicitement invité la personne, le
+   * compte est créé directement en statut `active`.
+   */
+  async registerWithInvite(input: {
+    inviteToken: string;
+    password: string;
+    siret: string;
+    role: 'producer' | 'buyer';
+  }): Promise<{ user: PublicUser }> {
+    const invite = await preRegistrationsService.validateInvitation(input.inviteToken);
+
+    const userRepo = AppDataSource.getRepository(User);
+    const existingEmail = await userRepo.findOne({ where: { email: invite.email } });
+    if (existingEmail && existingEmail.status !== UserStatus.DELETED) {
+      throw new AppError('EMAIL_ALREADY_USED', 'Cette adresse e-mail est déjà utilisée', 409);
+    }
+
+    const siret = input.siret.replace(/\s/g, '');
+    const siretBusy = await userRepo.exists({
+      where: { siret, status: Not(UserStatus.DELETED) },
+    });
+    if (siretBusy) {
+      throw new AppError('SIRET_ALREADY_USED', 'Ce SIRET est déjà associé à un compte', 409);
+    }
+
+    const insee = await validateSiretWithInsee(siret);
+    const passwordHash = await hashPassword(input.password);
+
+    const user = userRepo.create({
+      email: invite.email,
+      passwordHash,
+      role: input.role === 'producer' ? UserRole.PRODUCER : UserRole.BUYER,
+      status: UserStatus.ACTIVE,
+      siret,
+      companyName: insee.companyName || invite.companyName || null,
+      nafCode: insee.nafCode || null,
+      city: invite.city,
+      postalCode: invite.postalCode,
+    });
+    await userRepo.save(user);
+    await preRegistrationsService.markInvitationAccepted(input.inviteToken, user.id);
+
+    return { user: toPublicUser(user) };
+  },
+
   async login(
     email: string,
     password: string,
@@ -123,6 +173,15 @@ export const authService = {
     }
     if (user.status === UserStatus.SUSPENDED || user.status === UserStatus.DELETED) {
       throw new AppError('UNAUTHORIZED', 'Compte indisponible', 401);
+    }
+
+    // Phase de pré-lancement : seuls les comptes admin peuvent se connecter.
+    if (!env.APP_ACCESS_OPEN && user.role !== UserRole.ADMIN) {
+      throw new AppError(
+        'ACCESS_NOT_OPEN',
+        "L'accès à la plateforme n'est pas encore ouvert. Vous serez prévenu·e dès l'ouverture.",
+        403,
+      );
     }
 
     const accessToken = signAccessToken({ sub: user.id, role: user.role });

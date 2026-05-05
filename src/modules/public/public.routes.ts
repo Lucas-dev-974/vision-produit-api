@@ -5,8 +5,11 @@ import {
   listPublicProducersQuerySchema,
   publicProducerIdParamSchema,
 } from './public.schemas';
+import { publicPreRegistrationsRoutes } from '../pre-registrations/pre-registrations.routes';
 
 export const publicRoutes = Router();
+
+publicRoutes.use('/pre-registrations', publicPreRegistrationsRoutes);
 
 publicRoutes.get(
   '/producers',

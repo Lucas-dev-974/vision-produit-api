@@ -38,3 +38,29 @@ export const forgotPasswordRateLimiter = rateLimit({
     },
   },
 });
+
+export const preRegistrationRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'RATE_LIMITED',
+      message: 'Trop de pré-inscriptions depuis cette adresse',
+    },
+  },
+});
+
+export const preRegistrationConfirmRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'RATE_LIMITED',
+      message: 'Trop de tentatives, réessayez dans quelques minutes',
+    },
+  },
+});
