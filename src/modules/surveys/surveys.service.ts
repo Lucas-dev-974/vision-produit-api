@@ -5,6 +5,10 @@ import {
   SurveyRespondentRole,
   SurveyResponseStatus,
 } from '../../entities/survey-response.entity';
+import {
+  computeSurveyLeadTier,
+  type SurveyLeadTier,
+} from './survey-lead-tier';
 
 export interface SurveyResponseAdminDto {
   id: string;
@@ -18,6 +22,8 @@ export interface SurveyResponseAdminDto {
   answers: Record<string, unknown>;
   consentRgpd: boolean;
   consentRecontact: boolean;
+  /** Palier de priorisation commercial (dérivé des réponses + recontact). */
+  leadTier: SurveyLeadTier;
   status: SurveyResponseStatus;
   source: string | null;
   createdAt: string;
@@ -25,6 +31,7 @@ export interface SurveyResponseAdminDto {
 }
 
 function toAdminDto(s: SurveyResponse): SurveyResponseAdminDto {
+  const answers = s.answers ?? {};
   return {
     id: s.id,
     contactName: s.contactName,
@@ -34,9 +41,10 @@ function toAdminDto(s: SurveyResponse): SurveyResponseAdminDto {
     activityType: s.activityType,
     zone: s.zone,
     sizeBracket: s.sizeBracket,
-    answers: s.answers ?? {},
+    answers,
     consentRgpd: s.consentRgpd,
     consentRecontact: s.consentRecontact,
+    leadTier: computeSurveyLeadTier(answers, s.consentRecontact),
     status: s.status,
     source: s.source,
     createdAt: s.createdAt.toISOString(),
@@ -101,18 +109,36 @@ export const surveysService = {
     filters: {
       status?: SurveyResponseStatus;
       role?: SurveyRespondentRole;
+      leadTier?: SurveyLeadTier;
     } = {},
   ): Promise<{ items: SurveyResponseAdminDto[]; total: number }> {
     const repo = AppDataSource.getRepository(SurveyResponse);
-    const qb = repo.createQueryBuilder('s').orderBy('s.createdAt', 'DESC');
-    if (filters.status) qb.andWhere('s.status = :status', { status: filters.status });
-    if (filters.role) qb.andWhere('s.role = :role', { role: filters.role });
-    const total = await qb.getCount();
-    const items = await qb
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .getMany();
-    return { items: items.map(toAdminDto), total };
+
+    const baseQb = () => {
+      const qb = repo.createQueryBuilder('s').orderBy('s.createdAt', 'DESC');
+      if (filters.status) qb.andWhere('s.status = :status', { status: filters.status });
+      if (filters.role) qb.andWhere('s.role = :role', { role: filters.role });
+      return qb;
+    };
+
+    if (!filters.leadTier) {
+      const qb = baseQb();
+      const total = await qb.getCount();
+      const rows = await qb
+        .skip((page - 1) * pageSize)
+        .take(pageSize)
+        .getMany();
+      return { items: rows.map(toAdminDto), total };
+    }
+
+    const all = await baseQb().getMany();
+    const matched = all.filter(
+      (row) =>
+        computeSurveyLeadTier(row.answers ?? {}, row.consentRecontact) === filters.leadTier,
+    );
+    const total = matched.length;
+    const slice = matched.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize);
+    return { items: slice.map(toAdminDto), total };
   },
 
   async getForAdmin(id: string): Promise<SurveyResponseAdminDto> {

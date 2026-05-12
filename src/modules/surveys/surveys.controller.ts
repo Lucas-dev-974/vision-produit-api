@@ -3,6 +3,7 @@ import {
   SurveyRespondentRole,
   SurveyResponseStatus,
 } from '../../entities/survey-response.entity';
+import type { SurveyLeadTier } from './survey-lead-tier';
 import { surveysService } from './surveys.service';
 
 export const surveysController = {
@@ -40,15 +41,17 @@ export const surveysController = {
   },
 
   list: async (req: Request, res: Response): Promise<void> => {
-    const { page, pageSize, status, role } = req.query as unknown as {
+    const { page, pageSize, status, role, leadTier } = req.query as unknown as {
       page: number;
       pageSize: number;
       status?: SurveyResponseStatus;
       role?: SurveyRespondentRole;
+      leadTier?: SurveyLeadTier;
     };
     const { items, total } = await surveysService.listForAdmin(page, pageSize, {
       status,
       role,
+      leadTier,
     });
     res.json({ data: items, pagination: { page, pageSize, total } });
   },

@@ -101,6 +101,7 @@ export const listSurveyResponsesQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
   status: z.enum(['new', 'reviewed', 'archived']).optional(),
   role: z.enum(['producer', 'merchant', 'both']).optional(),
+  leadTier: z.enum(['hot', 'warm', 'cold', 'out']).optional(),
 });
 
 export const surveyResponseIdParamSchema = z.object({
