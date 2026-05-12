@@ -64,3 +64,16 @@ export const preRegistrationConfirmRateLimiter = rateLimit({
     },
   },
 });
+
+export const surveySubmitRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: {
+      code: 'RATE_LIMITED',
+      message: 'Trop de soumissions de questionnaire depuis cette adresse',
+    },
+  },
+});

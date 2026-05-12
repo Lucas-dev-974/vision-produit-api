@@ -10,6 +10,7 @@ import { messagingRoutes } from '../modules/messaging/messaging.routes';
 import { conversationsRoutes } from '../modules/conversations/conversations.routes';
 import { notificationsRoutes } from '../modules/notifications/notifications.routes';
 import { adminPreRegistrationsRoutes } from '../modules/pre-registrations/pre-registrations.routes';
+import { adminSurveysRoutes } from '../modules/surveys/surveys.routes';
 import { adminRoutes } from '../modules/admin/admin.routes';
 
 export const v1Router = Router();
@@ -29,4 +30,5 @@ v1Router.use('/messaging', messagingRoutes);
 v1Router.use('/conversations', conversationsRoutes);
 v1Router.use('/notifications', notificationsRoutes);
 v1Router.use('/admin/pre-registrations', adminPreRegistrationsRoutes);
+v1Router.use('/admin/surveys', adminSurveysRoutes);
 v1Router.use('/admin', adminRoutes);

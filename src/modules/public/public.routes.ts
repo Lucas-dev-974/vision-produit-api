@@ -6,10 +6,12 @@ import {
   publicProducerIdParamSchema,
 } from './public.schemas';
 import { publicPreRegistrationsRoutes } from '../pre-registrations/pre-registrations.routes';
+import { publicSurveysRoutes } from '../surveys/surveys.routes';
 
 export const publicRoutes = Router();
 
 publicRoutes.use('/pre-registrations', publicPreRegistrationsRoutes);
+publicRoutes.use('/surveys', publicSurveysRoutes);
 
 publicRoutes.get(
   '/producers',
