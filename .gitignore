@@ -4,5 +4,6 @@ node_modules/
 tmp/
 temp/
 build
-.envz
+.env
 /logs/
+dist/
